@@ -1,7 +1,11 @@
 from django.db import models
 
+from .querysets import PasscardQueryset, VisitQueryset
+
 
 class Passcard(models.Model):
+    objects = PasscardQueryset.as_manager()
+
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
     passcode = models.CharField(max_length=200, unique=True)
@@ -14,6 +18,8 @@ class Passcard(models.Model):
 
 
 class Visit(models.Model):
+    objects = VisitQueryset.as_manager()
+
     created_at = models.DateTimeField(auto_now=True)
     passcard = models.ForeignKey(Passcard, on_delete=models.CASCADE)
     entered_at = models.DateTimeField()

@@ -1,13 +1,23 @@
 import os
+from pathlib import Path
+
+from envparse import env
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR / ".env"
+
+if ENV_FILE.exists():
+    env.read_envfile(ENV_FILE)
+
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '',
-        'PORT': '',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
+        'HOST': env("POSTGRES_HOST"),
+        'PORT': env("POSTGRES_PORT", "5432"),
+        'NAME': env("POSTGRES_NAME"),
+        'USER': env("POSTGRES_USER"),
+        'PASSWORD': env("POSTGRES_PASSWORD"),
     }
 }
 
