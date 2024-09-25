@@ -5,23 +5,23 @@ from .constants import DURATION_TO_BE_STRANGE
 
 
 class PasscardQueryset(QuerySet):
-    def is_active(self):
+    def active(self):
         """Активные карты доступа"""
 
         return self.filter(is_active=True)
 
 
 class VisitQueryset(QuerySet):
-    def not_leaved(self):
-        """Визит, не покинувший хранилище"""
+    def still_not_leaved(self):
+        """Визиты без времени выхода"""
 
         return self.filter(leaved_at__isnull=True)
 
-    def annotate_duration(self):
-        """Время нахождения в хранилище"""
+    def annotate_inside_duration(self):
+        """Время нахождения внутри хранилища"""
 
         return self.annotate(
-            duration=Func(
+            inside_duration=Func(
                 localtime() - F("entered_at"),
                 Value("HH:MM:SS"),
                 function="to_char",
@@ -29,16 +29,20 @@ class VisitQueryset(QuerySet):
             )
         )
 
-    def annotate_is_strange(self):
-        """Был ли проход подозрительным"""
+    def annotate_visit_is_strange(self):
+        """Был ли визит подозрительным"""
 
         return self.annotate(
-            duration=F("leaved_at") - F("entered_at"),
+            full_duration=F("leaved_at") - F("entered_at"),
+            inside_duration=localtime() - F("entered_at"),
             is_strange=Case(
                 When(
                     Q(
-                        duration__gt=DURATION_TO_BE_STRANGE,
+                        full_duration__gt=DURATION_TO_BE_STRANGE,
                         leaved_at__isnull=False
+                    )
+                    | Q(
+                        inside_duration__gt=DURATION_TO_BE_STRANGE,
                     ),
                     then=True
                 ),
